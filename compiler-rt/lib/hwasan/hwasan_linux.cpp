@@ -38,7 +38,7 @@
 #include "sanitizer_common/sanitizer_common.h"
 #include "sanitizer_common/sanitizer_procmaps.h"
 
-#if HWASAN_WITH_INTERCEPTORS && !SANITIZER_ANDROID
+#if !SANITIZER_ANDROID
 SANITIZER_INTERFACE_ATTRIBUTE
 THREADLOCAL uptr __hwasan_tls;
 #endif
@@ -247,7 +247,10 @@ extern "C" void __hwasan_thread_exit() {
     hwasanThreadList().ReleaseThread(t);
 }
 
-#if HWASAN_WITH_INTERCEPTORS
+#if SANITIZER_ANDROID
+void HwasanTSDInit() {}
+void HwasanTSDThreadInit() {}
+#else
 static pthread_key_t tsd_key;
 static bool tsd_key_inited = false;
 
@@ -271,9 +274,6 @@ void HwasanTSDInit() {
   tsd_key_inited = true;
   CHECK_EQ(0, pthread_key_create(&tsd_key, HwasanTSDDtor));
 }
-#else
-void HwasanTSDInit() {}
-void HwasanTSDThreadInit() {}
 #endif
 
 #if SANITIZER_ANDROID
@@ -307,7 +307,7 @@ void AndroidTestTlsSlot() {}
 
 Thread *GetCurrentThread() {
   uptr *ThreadLong = GetCurrentThreadLongPtr();
-#if HWASAN_WITH_INTERCEPTORS
+#if !SANITIZER_ANDROID
   if (!*ThreadLong)
     __hwasan_thread_enter();
 #endif
