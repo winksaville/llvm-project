@@ -19,8 +19,16 @@ Sign up
 -------
 
 To get started with Phabricator, navigate to `https://reviews.llvm.org`_ and
-click the power icon in the top right. You can register with a GitHub account,
-a Google account, or you can create your own profile.
+click the Log In button in the top right side:
+
+.. image:: Phabricator-login.png
+
+Then Register New Account:
+
+.. image:: Phabricator-register.png
+
+Use GitHub, Google or create a Phabricator profile by clicking on appropriate
+button above.
 
 Make *sure* that the email address registered with Phabricator is subscribed
 to the relevant -commits mailing list. If you are not subscribed to the commit
@@ -30,6 +38,8 @@ Note that if you use your Subversion user name as Phabricator user name,
 Phabricator will automatically connect your submits to your Phabricator user in
 the `Code Repository Browser`_.
 
+.. _phabricator-request-review-command-line:
+
 Requesting a review via the command line
 ----------------------------------------
 
@@ -37,8 +47,62 @@ Phabricator has a tool called *Arcanist* to upload patches from
 the command line. To get you set up, follow the
 `Arcanist Quick Start`_ instructions.
 
-You can learn more about how to use arc to interact with
-Phabricator in the `Arcanist User Guide`_.
+There are many possible workflows for creating changes, what follows is
+one possibility.
+
+First create a branch off commit, tag or another branch like master. For a
+new feature this would typically be off the **master**. Then edit/create files,
+compile, test and commit the changes:
+
+::
+
+   git checkout -b update-phabricator.rst master
+   vi llvm/docs/phabricator.rst
+   ...
+   git commit -a -m "Update Phabricator.rst"
+
+|
+
+Before uploading for review you need to find your initial reviewers,
+finding-potential-reviewers_. Then use ``arc diff`` to upload commits to
+Differential, the web based Phabricator code review tool. When ``arc diff``
+runs it will use your editor (see set-arc-editor_) so you can supply ``Reviewers``
+and ``Subscribers`` in your commit message. ``arc`` requires one or more
+Reviewers (finding-reviewer-names_) and Subscribers should be the appropriate
+**-commits** list(s) from `listinfo <https://lists.llvm.org/mailman/listinfo>`_.
+If you are working off a clone of the official https://github.com/llvm/llvm-project/
+repository, Phabricator will provide the correct lists automatically for
+Subscribers. Otherwise, please add the relevant ones yourself."
+
+::
+
+  arc diff master
+
+|
+
+Here is the editor running allowing you to edit your commit message. A
+summary message and reviewer has been added and its ready to be written.
+
+.. image:: Phabricator-commit-message.png
+
+|
+
+After writing and quitting the editor you'll see a summary of what ``arc`` did:
+
+.. image:: Phabricator-done.png
+
+|
+
+You can now navigate to the `Differential revision` at
+`<https://reviews.llvm.org/D61267>`_.
+
+.. image:: Phabricator-D61267.png
+
+|
+
+See `Arcanist diff <https://secure.phabricator.com/book/phabricator/article/arcanist\_diff>`_
+documentation and more about interacting with Phabricator in the `Arcanist User Guide`_.
+
 
 .. _phabricator-request-review-web:
 
@@ -104,8 +168,8 @@ Finding potential reviewers
 
 Here are a couple of ways to pick the initial reviewer(s):
 
-* Use ``svn blame`` and the commit log to find names of people who have
-  recently modified the same area of code that you are modifying.
+* Use :ref:`arc cover<arc-cover>`, ``git blame`` or the commit log to find names
+  of people who have recently modified the same area of code that you are modifying.
 * Look in CODE_OWNERS.TXT to see who might be responsible for that area.
 * If you've discussed the change on a dev list, the people who participated
   might be appropriate reviewers.
@@ -113,6 +177,90 @@ Here are a couple of ways to pick the initial reviewer(s):
 Even if you think the code owner is the busiest person in the world, it's still
 okay to put them as a reviewer. Being the code owner means they have accepted
 responsibility for making sure the review happens.
+
+
+.. _finding-reviewer-names:
+
+Finding Reviewers Names
+-----------------------
+
+The names for Reviewers and Subscribers is the user name registered at
+`<https://reviews.llvm.org>`_. Use the search box and type some or all of
+the persons "real name" or possibly their email name (which might be their
+username).
+
+.. image:: Phabricator-search.png
+
+
+.. _set-arc-editor:
+
+Set arc Editor
+--------------
+
+The default editor for ``arc diff`` is nano on Linux, if you have a
+favorite editor you can set it globally using ``arc set-config``:
+
+::
+
+  $ arc set-config editor vim
+  Set key "editor" = "vim" in user config (was null).
+
+|
+
+Or the current project passing ``--local``:
+
+::
+
+  $ arc set-config --local editor vim
+  Set key "editor" = "vim" in local config (was null).
+
+|
+
+For help execute: ``arc help set-config``.
+
+.. _arc-cover:
+
+Arc cover
+---------
+
+``arc cover`` uses blame information to identify the names associated with
+modified lines. If you want to look at a particular file:
+
+::
+
+  $ arc cover llvm/docs/Phabricator
+  Reid Kleckner
+    llvm/docs/Phabricator.rst: lines 22-23
+  Sanjay Patel
+    llvm/docs/Phabricator.rst: line 24
+  Manuel Klimek
+    llvm/docs/Phabricator.rst: lines 32-33, 40-41, 116-117
+  Florian Hahn
+    llvm/docs/Phabricator.rst: line 42
+  Paul Robinson
+    llvm/docs/Phabricator.rst: lines 107-108
+
+|
+
+Or if you've created a commit you can provide a revision:
+
+::
+
+  $ arc cover --rev master
+  Reid Kleckner
+    llvm/docs/Phabricator.rst: lines 22-23
+  Sanjay Patel
+    llvm/docs/Phabricator.rst: line 24
+  Manuel Klimek
+    llvm/docs/Phabricator.rst: lines 32-33, 40-41, 116-117
+  Florian Hahn
+    llvm/docs/Phabricator.rst: line 42
+  Paul Robinson
+    llvm/docs/Phabricator.rst: lines 107-108
+
+|
+
+For help execute: ``arc help cover``.
 
 Reviewing code with Phabricator
 -------------------------------
