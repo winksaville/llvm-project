@@ -3,6 +3,8 @@ set(LLVM_LINK_COMPONENTS
   )
 
 add_clang_library(clangARCMigrate
+  STATIC SHARED
+
   ARCMT.cpp
   ARCMTActions.cpp
   FileRemapper.cpp

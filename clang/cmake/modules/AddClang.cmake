@@ -44,8 +44,8 @@ endmacro()
 
 macro(add_clang_library name)
   cmake_parse_arguments(ARG
-    "SHARED"
-    ""
+    "SHARED;STATIC"
+    "OUTPUT_NAME"
     "ADDITIONAL_HEADERS"
     ${ARGN})
   set(srcs)
@@ -83,7 +83,18 @@ macro(add_clang_library name)
   if(ARG_SHARED)
     set(ARG_ENABLE_SHARED SHARED)
   endif()
-  llvm_add_library(${name} ${ARG_ENABLE_SHARED} ${ARG_UNPARSED_ARGUMENTS} ${srcs})
+  if(ARG_STATIC)
+    set(ARG_ENABLE_STATIC STATIC)
+  endif()
+  if(ARG_OUTPUT_NAME)
+    set(NAME_OUTPUT OUTPUT_NAME ${ARG_OUTPUT_NAME})
+  elseif(ARG_SHARED AND ARG_STATIC)
+    set(NAME_OUTPUT OUTPUT_NAME ${name})
+  else()
+    set(NAME_OUTPUT)
+  endif()
+  #message(STATUS "${name}: NAME_OUTPUT='${NAME_OUTPUT}' ARG_ENABLE_SHARED='${ARG_ENABLE_SHARED}' ARG_ENABLE_STATIC='${ARG_ENABLE_STATIC}'")
+  llvm_add_library(${name} ${NAME_OUTPUT} ${ARG_ENABLE_SHARED} ${ARG_ENABLE_STATIC} ${ARG_UNPARSED_ARGUMENTS} ${srcs})
 
   if(TARGET ${name})
     target_link_libraries(${name} INTERFACE ${LLVM_COMMON_LIBS})
