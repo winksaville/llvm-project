@@ -447,6 +447,9 @@ option(CLANG_BUILD_TOOLS
 option(CLANG_ENABLE_ARCMT "Build ARCMT." ON)
 option(CLANG_ENABLE_STATIC_ANALYZER "Build static analyzer." ON)
 
+option(CLANG_ENABLE_SHARED_LIBRARIES "Build libclang* as shared libraries." OFF)
+option(CLANG_ENABLE_STATIC_LIBRARIES "Build libclang* as static libraries." ON)
+
 option(CLANG_ENABLE_PROTO_FUZZER "Build Clang protobuf fuzzer." OFF)
 
 if(NOT CLANG_ENABLE_STATIC_ANALYZER AND CLANG_ENABLE_ARCMT)
