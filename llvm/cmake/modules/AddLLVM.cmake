@@ -388,31 +388,23 @@ endfunction(set_windows_version_resource_properties)
 #     The tool (i.e. cmake target) that this plugin will link against
 #   )
 function(llvm_add_library name)
-  message(STATUS "llvm_add_library ${name}:+")
   cmake_parse_arguments(ARG
     "MODULE;SHARED;STATIC;OBJECT;DISABLE_LLVM_LINK_LLVM_DYLIB;SONAME;NO_INSTALL_RPATH"
     "OUTPUT_NAME;PLUGIN_TOOL;ENTITLEMENTS"
     "ADDITIONAL_HEADERS;DEPENDS;LINK_COMPONENTS;LINK_LIBS;OBJLIBS"
     ${ARGN})
   list(APPEND LLVM_COMMON_DEPENDS ${ARG_DEPENDS})
-  if(ARG_OUTPUT_NAME)
-    message(STATUS "llvm_add_library ${name}: 0.1 ARG_OUTPUT_NAME='${ARG_OUTPUT_NAME}'")
-  endif()
   if(ARG_ADDITIONAL_HEADERS)
-    message(STATUS "llvm_add_library ${name}: 0.2")
     # Pass through ADDITIONAL_HEADERS.
     set(ARG_ADDITIONAL_HEADERS ADDITIONAL_HEADERS ${ARG_ADDITIONAL_HEADERS})
   endif()
   if(ARG_OBJLIBS)
-    message(STATUS "llvm_add_library ${name}: 0.3")
     set(ALL_FILES ${ARG_OBJLIBS})
   else()
-    message(STATUS "llvm_add_library ${name}: 0.4")
     llvm_process_sources(ALL_FILES ${ARG_UNPARSED_ARGUMENTS} ${ARG_ADDITIONAL_HEADERS})
   endif()
 
   if(ARG_MODULE)
-    message(STATUS "llvm_add_library ${name}: 1")
     if(ARG_SHARED OR ARG_STATIC)
       message(WARNING "MODULE with SHARED|STATIC doesn't make sense.")
     endif()
@@ -422,24 +414,19 @@ function(llvm_add_library name)
       return()
     endif()
   else()
-    message(STATUS "llvm_add_library ${name}: 2")
     if(ARG_PLUGIN_TOOL)
-      message(STATUS "llvm_add_library ${name}: 2.1")
       message(WARNING "PLUGIN_TOOL without MODULE doesn't make sense.")
     endif()
     if(BUILD_SHARED_LIBS AND NOT ARG_STATIC)
-      message(STATUS "llvm_add_library ${name}: 2.2 set ARG_SHARED TRUE")
       set(ARG_SHARED TRUE)
     endif()
     if(NOT ARG_SHARED)
-      message(STATUS "llvm_add_library ${name}: 2.3 set ARG_STATIC TRUE")
       set(ARG_STATIC TRUE)
     endif()
   endif()
 
   # Generate objlib
   if((ARG_SHARED AND ARG_STATIC) OR ARG_OBJECT)
-    message(STATUS "llvm_add_library ${name}: 3")
     # Generate an obj library for both targets.
     set(obj_name "obj.${name}")
     add_library(${obj_name} OBJECT EXCLUDE_FROM_ALL
@@ -454,33 +441,10 @@ function(llvm_add_library name)
     set_target_properties(${obj_name} PROPERTIES FOLDER "Object Libraries")
   endif()
 
-  #if(ARG_SHARED AND ARG_STATIC)
-  #  # Do static first
-  #  message(STATUS "llvm_add_library ${name}: 4")
-  #  # static
-  #  set(name_static "${name}_static")
-  #  if(ARG_OUTPUT_NAME)
-  #    message(STATUS "llvm_add_library ${name}: 4.1 set OUTPUT_NAME=${ARG_OUTPUT_NAME}")
-  #    set(output_name OUTPUT_NAME "${ARG_OUTPUT_NAME}")
-  #  endif()
-  #  # DEPENDS has been appended to LLVM_COMMON_LIBS.
-  #  llvm_add_library(${name_static} STATIC
-  #    ${output_name}
-  #    OBJLIBS ${ALL_FILES} # objlib
-  #    LINK_LIBS ${ARG_LINK_LIBS}
-  #    LINK_COMPONENTS ${ARG_LINK_COMPONENTS}
-  #    )
-  #  # FIXME: Add name_static to anywhere in TARGET ${name}'s PROPERTY.
-  #  set(ARG_STATIC)
-  #  message(STATUS "llvm_add_library ${name}: 4.99 set ARG_STATIC=${ARG_STATIC}")
-  #endif()
   if(ARG_SHARED AND ARG_STATIC)
     # Do shared first
-    message(STATUS "llvm_add_library ${name}: 4")
-    # shared
     set(name_shared "${name}_shared")
     if(ARG_OUTPUT_NAME)
-      message(STATUS "llvm_add_library ${name}: 4.1 set OUTPUT_NAME=${ARG_OUTPUT_NAME}")
       set(output_name OUTPUT_NAME "${ARG_OUTPUT_NAME}")
     endif()
     # DEPENDS has been appended to LLVM_COMMON_LIBS.
@@ -490,37 +454,28 @@ function(llvm_add_library name)
       LINK_LIBS ${ARG_LINK_LIBS}
       LINK_COMPONENTS ${ARG_LINK_COMPONENTS}
       )
-    # FIXME: Add name_static to anywhere in TARGET ${name}'s PROPERTY.
+    # FIXME: Add name_shared to anywhere in TARGET ${name}'s PROPERTY.
     set(ARG_SHARED)
-    message(STATUS "llvm_add_library ${name}: 4.99 set ARG_STATIC=${ARG_STATIC} ARG_SHARED=${ARG_SHARED}")
   endif()
-  message(STATUS "llvm_add_library ${name}: 5 set ARG_STATIC=${ARG_STATIC} ARG_SHARED=${ARG_SHARED}")
 
   if(ARG_MODULE)
-    message(STATUS "llvm_add_library ${name}: 5.1 add_library MODULE ALL_FILES=${ALL_FILES}")
     add_library(${name} MODULE ${ALL_FILES})
   elseif(ARG_SHARED)
-    message(STATUS "llvm_add_library ${name}: 5.2 add_library SHARED ALL_FILES=${ALL_FILES}")
     add_windows_version_resource_file(ALL_FILES ${ALL_FILES})
     add_library(${name} SHARED ${ALL_FILES})
   else()
-    message(STATUS "llvm_add_library ${name}: 5.3 add_library STATIC ALL_FILES=${ALL_FILES}")
     add_library(${name} STATIC ${ALL_FILES})
   endif()
 
   if(NOT ARG_NO_INSTALL_RPATH)
-    message(STATUS "llvm_add_library ${name}: 6")
     if(ARG_MODULE OR ARG_SHARED)
-      message(STATUS "llvm_add_library ${name}: 6.1")
       llvm_setup_rpath(${name})
     endif()
-    message(STATUS "llvm_add_library ${name}: 6.99")
   endif()
 
   setup_dependency_debugging(${name} ${LLVM_COMMON_DEPENDS})
 
   if(DEFINED windows_resource_file)
-    message(STATUS "llvm_add_library ${name}: 7")
     set_windows_version_resource_properties(${name} ${windows_resource_file})
     set(windows_resource_file ${windows_resource_file} PARENT_SCOPE)
   endif()
@@ -528,12 +483,10 @@ function(llvm_add_library name)
   set_output_directory(${name} BINARY_DIR ${LLVM_RUNTIME_OUTPUT_INTDIR} LIBRARY_DIR ${LLVM_LIBRARY_OUTPUT_INTDIR})
   # $<TARGET_OBJECTS> doesn't require compile flags.
   if(NOT obj_name)
-    message(STATUS "llvm_add_library ${name}: 8")
     llvm_update_compile_flags(${name})
   endif()
   add_link_opts( ${name} )
   if(ARG_OUTPUT_NAME)
-    message(STATUS "llvm_add_library ${name}: 9 set OUTPUT_NAME ${ARG_OUTPUT_NAME}")
     set_target_properties(${name}
       PROPERTIES
       OUTPUT_NAME ${ARG_OUTPUT_NAME}
@@ -541,20 +494,14 @@ function(llvm_add_library name)
   endif()
 
   if(ARG_MODULE)
-    message(STATUS "llvm_add_library ${name}: 10 set SUFFIX ${ARG_PLUGIN_EXT}")
     set_target_properties(${name} PROPERTIES
       PREFIX ""
       SUFFIX ${LLVM_PLUGIN_EXT}
       )
   endif()
 
-  #if (ARG_SHARED AND ("${ARG_OUTPUT_NAME}" STREQUAL "clangARCMigrate"))
-  #  message(STATUS "llvm_add_library ${name}: skipping 11 ARG_SHARED=${ARG_SHARED} AND clangARCMigrate")
-  #else()
   if(ARG_SHARED)
-    message(STATUS "llvm_add_library ${name}: 11 ARG_SHARED=${ARG_SHARED}")
     if(WIN32)
-      message(STATUS "llvm_add_library ${name}: 11.1")
       set_target_properties(${name} PROPERTIES
         PREFIX ""
         )
@@ -563,22 +510,15 @@ function(llvm_add_library name)
     # Set SOVERSION on shared libraries that lack explicit SONAME
     # specifier, on *nix systems that are not Darwin.
     if(UNIX AND NOT APPLE AND NOT ARG_SONAME)
-      message(STATUS "llvm_add_library ${name}: 11.2")
       set_target_properties(${name}
         PROPERTIES
         # Since 4.0.0, the ABI version is indicated by the major version
         SOVERSION ${LLVM_VERSION_MAJOR}${LLVM_VERSION_SUFFIX}
         VERSION ${LLVM_VERSION_MAJOR}${LLVM_VERSION_SUFFIX})
     endif()
-    message(STATUS "llvm_add_library ${name}: 11.99")
   endif()
-  #endif()
 
-  #if (ARG_SHARED AND ("${ARG_OUTPUT_NAME}" STREQUAL "clangARCMigrate"))
-  #  message(STATUS "llvm_add_library ${name}: skipping 12 ARG_SHARED=${ARG_SHARED} AND clangARCMigrate")
-  #else()
   if(ARG_MODULE OR ARG_SHARED)
-    message(STATUS "llvm_add_library ${name}: 12 ARG_MODULE=${ARG_MODULE} OR ARG_SHARED=${ARG_SHARED}")
     # Do not add -Dname_EXPORTS to the command-line when building files in this
     # target. Doing so is actively harmful for the modules build because it
     # creates extra module variants, and not useful because we don't use these
@@ -586,23 +526,14 @@ function(llvm_add_library name)
     set_target_properties( ${name} PROPERTIES DEFINE_SYMBOL "" )
 
     if (LLVM_EXPORTED_SYMBOL_FILE)
-      message(STATUS "llvm_add_library ${name}: 12.1")
       add_llvm_symbol_exports( ${name} ${LLVM_EXPORTED_SYMBOL_FILE} )
     endif()
-    message(STATUS "llvm_add_library ${name}: 12.99")
   endif()
-  #endif()
 
-  #if (ARG_SHARED AND ("${ARG_OUTPUT_NAME}" STREQUAL "clangARCMigrate"))
-  #  message(STATUS "llvm_add_library ${name}: skipping 13 ARG_SHARED=${ARG_SHARED} AND clangARCMigrate")
-  #else()
   if(ARG_SHARED AND UNIX)
-    message(STATUS "llvm_add_library ${name}: 13 ARG_SHARED=${ARG_SHARED} AND UNIX=${UNIX}")
     if(NOT APPLE AND ARG_SONAME)
-      message(STATUS "llvm_add_library ${name}: 13.1")
       get_target_property(output_name ${name} OUTPUT_NAME)
       if(${output_name} STREQUAL "output_name-NOTFOUND")
-        message(STATUS "llvm_add_library ${name}: 13.1.1")
         set(output_name ${name})
       endif()
       set(library_name ${output_name}-${LLVM_VERSION_MAJOR}${LLVM_VERSION_SUFFIX})
@@ -615,31 +546,21 @@ function(llvm_add_library name)
         COMPONENT ${name}
         ALWAYS_GENERATE)
     endif()
-    message(STATUS "llvm_add_library ${name}: 13.99")
   endif()
-  #endif()
 
-  #if (ARG_SHARED AND ("${ARG_OUTPUT_NAME}" STREQUAL "clangARCMigrate"))
-  #  message(STATUS "llvm_add_library ${name}: skipping 14-15-16 ARG_SHARED=${ARG_SHARED} AND clangARCMigrate")
-  #else()
   if(ARG_MODULE AND LLVM_EXPORT_SYMBOLS_FOR_PLUGINS AND ARG_PLUGIN_TOOL AND (WIN32 OR CYGWIN))
-    message(STATUS "llvm_add_library ${name}: 14")
     # On DLL platforms symbols are imported from the tool by linking against it.
     set(llvm_libs ${ARG_PLUGIN_TOOL})
   elseif (DEFINED LLVM_LINK_COMPONENTS OR DEFINED ARG_LINK_COMPONENTS)
-    message(STATUS "llvm_add_library ${name}: 15")
     if (LLVM_LINK_LLVM_DYLIB AND NOT ARG_DISABLE_LLVM_LINK_LLVM_DYLIB)
-      message(STATUS "llvm_add_library ${name}: 15.1")
       set(llvm_libs LLVM)
     else()
-      message(STATUS "llvm_add_library ${name}: 15.2")
       llvm_map_components_to_libnames(llvm_libs
        ${ARG_LINK_COMPONENTS}
        ${LLVM_LINK_COMPONENTS}
        )
     endif()
   else()
-    message(STATUS "llvm_add_library ${name}: 16")
     # Components have not been defined explicitly in CMake, so add the
     # dependency information for this library as defined by LLVMBuild.
     #
@@ -648,33 +569,21 @@ function(llvm_add_library name)
     # property has been set to an empty value.
     get_property(lib_deps GLOBAL PROPERTY LLVMBUILD_LIB_DEPS_${name})
   endif()
-  #endif()
 
-  #if (ARG_SHARED AND ("${ARG_OUTPUT_NAME}" STREQUAL "clangARCMigrate"))
-  #  message(STATUS "llvm_add_library ${name}: skipping 17-18 ARG_SHARED=${ARG_SHARED} AND clangARCMigrate")
-  #else()
   if(ARG_STATIC)
-    message(STATUS "llvm_add_library ${name}: 17 ARG_STATIC=${ARG_STATIC}")
     set(libtype INTERFACE)
   else()
-    message(STATUS "llvm_add_library ${name}: 18 ARG_STATIC=${ARG_STATIC}")
     # We can use PRIVATE since SO knows its dependent libs.
     set(libtype PRIVATE)
   endif()
-  #endif()
 
-  message(STATUS "llvm_add_library ${name}: 19 target_link_libraries(name=${name} libtype=${libtype} ARG_LINK_LIBS=${ARG_LINK_LIBS} lib_deps=${lib_deps} llvm_libs=${llvm_libs}")
   target_link_libraries(${name} ${libtype}
       ${ARG_LINK_LIBS}
       ${lib_deps}
       ${llvm_libs}
       )
 
-  #if (ARG_SHARED AND ("${ARG_OUTPUT_NAME}" STREQUAL "clangARCMigrate"))
-  #  message(STATUS "llvm_add_library ${name}: skipping 20 ARG_SHARED=${ARG_SHARED} AND clangARCMigrate")
-  #else()
   if(LLVM_COMMON_DEPENDS)
-    message(STATUS "llvm_add_library ${name}: 20")
     add_dependencies(${name} ${LLVM_COMMON_DEPENDS})
     # Add dependencies also to objlibs.
     # CMake issue 14747 --  add_dependencies() might be ignored to objlib's user.
@@ -682,18 +591,11 @@ function(llvm_add_library name)
       add_dependencies(${objlib} ${LLVM_COMMON_DEPENDS})
     endforeach()
   endif()
-  #endif()
 
-  #if (ARG_SHARED AND ("${ARG_OUTPUT_NAME}" STREQUAL "clangARCMigrate"))
-  #  message(STATUS "llvm_add_library ${name}: skipping 21 ARG_SHARED=${ARG_SHARED} AND clangARCMigrate")
-  #else()
   if(ARG_SHARED OR ARG_MODULE)
-    message(STATUS "llvm_add_library ${name}: 21")
     llvm_externalize_debuginfo(${name})
     llvm_codesign(${name} ENTITLEMENTS ${ARG_ENTITLEMENTS})
   endif()
-  #endif()
-  message(STATUS "llvm_add_library ${name}:-")
 endfunction()
 
 function(add_llvm_install_targets target)
