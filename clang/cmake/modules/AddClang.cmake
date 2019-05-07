@@ -43,6 +43,7 @@ macro(add_clang_subdirectory name)
 endmacro()
 
 macro(add_clang_library name)
+  message(STATUS "add_clang_library ${name}:+")
   cmake_parse_arguments(ARG
     "SHARED;STATIC"
     "OUTPUT_NAME"
@@ -93,21 +94,27 @@ macro(add_clang_library name)
   else()
     set(NAME_OUTPUT)
   endif()
-  #message(STATUS "${name}: NAME_OUTPUT='${NAME_OUTPUT}' ARG_ENABLE_SHARED='${ARG_ENABLE_SHARED}' ARG_ENABLE_STATIC='${ARG_ENABLE_STATIC}'")
+  message(STATUS "add_clang_library ${name}: NAME_OUTPUT='${NAME_OUTPUT}' ARG_ENABLE_SHARED='${ARG_ENABLE_SHARED}' ARG_ENABLE_STATIC='${ARG_ENABLE_STATIC}'")
   llvm_add_library(${name} ${NAME_OUTPUT} ${ARG_ENABLE_SHARED} ${ARG_ENABLE_STATIC} ${ARG_UNPARSED_ARGUMENTS} ${srcs})
 
+  set(x TARGET ${name})
+
   if(TARGET ${name})
+    message(STATUS "add_clang_library ${name}: TARGET ${name} was TRUE")
     target_link_libraries(${name} INTERFACE ${LLVM_COMMON_LIBS})
 
     if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY OR ${name} STREQUAL "libclang")
+      message(STATUS "add_clang_library ${name}: 2")
       set(export_to_clangtargets)
       if(${name} IN_LIST LLVM_DISTRIBUTION_COMPONENTS OR
           "clang-libraries" IN_LIST LLVM_DISTRIBUTION_COMPONENTS OR
           NOT LLVM_DISTRIBUTION_COMPONENTS)
+        message(STATUS "add_clang_library ${name}: 3")
         set(export_to_clangtargets EXPORT ClangTargets)
         set_property(GLOBAL PROPERTY CLANG_HAS_EXPORTS True)
       endif()
 
+      message(STATUS "add_clang_library ${name}: 4")
       install(TARGETS ${name}
         COMPONENT ${name}
         ${export_to_clangtargets}
@@ -116,21 +123,26 @@ macro(add_clang_library name)
         RUNTIME DESTINATION bin)
 
       if (NOT LLVM_ENABLE_IDE)
+        message(STATUS "add_clang_library ${name}: 5")
         add_llvm_install_targets(install-${name}
                                  DEPENDS ${name}
                                  COMPONENT ${name})
       endif()
 
       set_property(GLOBAL APPEND PROPERTY CLANG_LIBS ${name})
+      message(STATUS "add_clang_library ${name}: 6")
     endif()
     set_property(GLOBAL APPEND PROPERTY CLANG_EXPORTS ${name})
+    message(STATUS "add_clang_library ${name}: 7")
   else()
+    message(STATUS "add_clang_library ${name}: TARGET ${name} was FALSE")
     # Add empty "phony" target
     add_custom_target(${name})
   endif()
 
   set_target_properties(${name} PROPERTIES FOLDER "Clang libraries")
   set_clang_windows_version_resource_properties(${name})
+  message(STATUS "add_clang_library ${name}:-")
 endmacro(add_clang_library)
 
 macro(add_clang_executable name)
