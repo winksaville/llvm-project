@@ -442,20 +442,20 @@ function(llvm_add_library name)
   endif()
 
   if(ARG_SHARED AND ARG_STATIC)
-    # static
-    set(name_static "${name}_static")
+    # SHARED as ${name}_shared STATIC will be ${name}
+    set(name_shared "${name}_shared")
     if(ARG_OUTPUT_NAME)
       set(output_name OUTPUT_NAME "${ARG_OUTPUT_NAME}")
     endif()
     # DEPENDS has been appended to LLVM_COMMON_LIBS.
-    llvm_add_library(${name_static} STATIC
+    llvm_add_library(${name_shared} SHARED
       ${output_name}
       OBJLIBS ${ALL_FILES} # objlib
       LINK_LIBS ${ARG_LINK_LIBS}
       LINK_COMPONENTS ${ARG_LINK_COMPONENTS}
       )
-    # FIXME: Add name_static to anywhere in TARGET ${name}'s PROPERTY.
-    set(ARG_STATIC)
+    # FIXME: Add name_shared to anywhere in TARGET ${name}'s PROPERTY.
+    set(ARG_SHARED)
   endif()
 
   if(ARG_MODULE)
