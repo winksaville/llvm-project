@@ -404,6 +404,10 @@ function(llvm_add_library name)
     llvm_process_sources(ALL_FILES ${ARG_UNPARSED_ARGUMENTS} ${ARG_ADDITIONAL_HEADERS})
   endif()
 
+  if(ARG_SHARED AND ARG_STATIC)
+    message(FATAL_ERROR "Adding SHARED and STATIC libraries simultaneously is not supported")
+  endif()
+
   if(ARG_MODULE)
     if(ARG_SHARED OR ARG_STATIC)
       message(WARNING "MODULE with SHARED|STATIC doesn't make sense.")
@@ -426,7 +430,7 @@ function(llvm_add_library name)
   endif()
 
   # Generate objlib
-  if((ARG_SHARED AND ARG_STATIC) OR ARG_OBJECT)
+  if(ARG_OBJECT)
     # Generate an obj library for both targets.
     set(obj_name "obj.${name}")
     add_library(${obj_name} OBJECT EXCLUDE_FROM_ALL
@@ -439,23 +443,6 @@ function(llvm_add_library name)
     list(APPEND objlibs ${obj_name})
 
     set_target_properties(${obj_name} PROPERTIES FOLDER "Object Libraries")
-  endif()
-
-  if(ARG_SHARED AND ARG_STATIC)
-    # static
-    set(name_static "${name}_static")
-    if(ARG_OUTPUT_NAME)
-      set(output_name OUTPUT_NAME "${ARG_OUTPUT_NAME}")
-    endif()
-    # DEPENDS has been appended to LLVM_COMMON_LIBS.
-    llvm_add_library(${name_static} STATIC
-      ${output_name}
-      OBJLIBS ${ALL_FILES} # objlib
-      LINK_LIBS ${ARG_LINK_LIBS}
-      LINK_COMPONENTS ${ARG_LINK_COMPONENTS}
-      )
-    # FIXME: Add name_static to anywhere in TARGET ${name}'s PROPERTY.
-    set(ARG_STATIC)
   endif()
 
   if(ARG_MODULE)
