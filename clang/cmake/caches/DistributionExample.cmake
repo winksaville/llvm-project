@@ -2,7 +2,7 @@
 
 #Enable LLVM projects and runtimes
 set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lld" CACHE STRING "")
-set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx" CACHE STRING "")
+set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi" CACHE STRING "")
 
 # Only build the native target in stage1 since it is a throwaway build.
 set(LLVM_TARGETS_TO_BUILD Native CACHE STRING "")
@@ -33,6 +33,9 @@ set(CLANG_BOOTSTRAP_TARGETS
 
 # Setup the bootstrap build.
 set(CLANG_ENABLE_BOOTSTRAP ON CACHE BOOL "")
+set(LLVM_USE_LINKER "gold" CACHE STRING "")
+set(LLVM_BINUTILS_INCDIR "/usr/include" CACHE PATH "")
+set(LLVM_EXPORT_SYMBOLS_FOR_PLUGINS ON CACHE BOOL "")
 
 if(STAGE2_CACHE_FILE)
   set(CLANG_BOOTSTRAP_CMAKE_ARGS
