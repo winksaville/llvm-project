@@ -409,6 +409,7 @@ function(llvm_add_library name)
       message(WARNING "MODULE with SHARED|STATIC doesn't make sense.")
     endif()
     # Plugins that link against a tool are allowed even when plugins in general are not
+    message(STATUS "llvm_add_library: ${name} LLVM_ENABLE_PLUGINS=${LLVM_ENABLE_PLUGINS} ARG_PLUGIN_TOOL=${ARG_PLUGIN_TOOL} LLVM_EXPORT_SYMBOLS_FOR_PLUGINS=${LLVM_EXPORT_SYMBOLS_FOR_PLUGINS}")
     if(NOT LLVM_ENABLE_PLUGINS AND NOT (ARG_PLUGIN_TOOL AND LLVM_EXPORT_SYMBOLS_FOR_PLUGINS))
       message(STATUS "${name} ignored -- Loadable modules not supported on this platform.")
       return()
