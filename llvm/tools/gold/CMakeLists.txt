@@ -13,6 +13,7 @@ if( LLVM_ENABLE_PIC AND LLVM_BINUTILS_INCDIR )
 
   add_llvm_library(LLVMgold MODULE
     gold-plugin.cpp
+    PLUGIN_TOOL LLVM
     )
 
 endif()
