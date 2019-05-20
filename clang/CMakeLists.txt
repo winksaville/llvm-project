@@ -810,7 +810,7 @@ if (CLANG_ENABLE_BOOTSTRAP)
   # exclude really-install from main target
   set_target_properties(${NEXT_CLANG_STAGE} PROPERTIES _EP_really-install_EXCLUDE_FROM_MAIN On)
   ExternalProject_Add_Step(${NEXT_CLANG_STAGE} really-install
-    COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --target install
+    COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> -v -j 11 --target install
     COMMENT "Performing install step for '${NEXT_CLANG_STAGE}'"
     DEPENDEES build
     USES_TERMINAL 1
@@ -826,7 +826,7 @@ if (CLANG_ENABLE_BOOTSTRAP)
     set_target_properties(${NEXT_CLANG_STAGE} PROPERTIES _EP_${target}_EXCLUDE_FROM_MAIN On)
 
     ExternalProject_Add_Step(${NEXT_CLANG_STAGE} ${target}
-      COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --target ${target}
+      COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> -v -j 11 --target ${target}
       COMMENT "Performing ${target} for '${NEXT_CLANG_STAGE}'"
       DEPENDEES configure
       USES_TERMINAL 1

@@ -11,7 +11,7 @@ function(llvm_ExternalProject_BuildCmd out_var target bin_dir)
     # Use special command for Makefiles to support parallelism.
     set(${out_var} "$(MAKE)" "-C" "${bin_dir}" "${target}" PARENT_SCOPE)
   else()
-    set(${out_var} ${CMAKE_COMMAND} --build ${bin_dir} --target ${target}
+    set(${out_var} ${CMAKE_COMMAND} --build ${bin_dir} -v -j 11 --target ${target}
                                     --config ${ARG_CONFIGURATION} PARENT_SCOPE)
   endif()
 endfunction()

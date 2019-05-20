@@ -17,7 +17,7 @@ function(get_ext_project_build_command out_var target)
     # Use special command for Makefiles to support parallelism.
     set(${out_var} "$(MAKE)" "${target}" PARENT_SCOPE)
   else()
-    set(${out_var} ${CMAKE_COMMAND} --build . --target ${target}
+    set(${out_var} ${CMAKE_COMMAND} --build . -v -j 11 --target ${target}
                                     --config $<CONFIG> PARENT_SCOPE)
   endif()
 endfunction()
