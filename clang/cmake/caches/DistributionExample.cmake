@@ -40,6 +40,6 @@ if(STAGE2_CACHE_FILE)
     CACHE STRING "")
 else()
   set(CLANG_BOOTSTRAP_CMAKE_ARGS
-    -C ${CMAKE_CURRENT_LIST_DIR}/DistributionExample-stage2.cmake
+    -DLLVM_USE_LINKER=gold -C ${CMAKE_CURRENT_LIST_DIR}/DistributionExample-stage2.cmake
     CACHE STRING "")
 endif()
