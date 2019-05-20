@@ -623,7 +623,7 @@ macro(add_custom_libcxx name prefix)
   if (CMAKE_GENERATOR MATCHES "Make")
     set(run_clean "$(MAKE)" "-C" "${BINARY_DIR}" "clean")
   else()
-    set(run_clean ${CMAKE_COMMAND} --build ${BINARY_DIR} --target clean
+    set(run_clean ${CMAKE_COMMAND} --build ${BINARY_DIR} -v -j 11 --target clean
                                    --config "$<CONFIG>")
   endif()
 
